@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WanStudio — واجهتي لتوليد الفيديو</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;padding:18px;font-family:'Tajawal',system-ui,sans-serif;
+       background:linear-gradient(160deg,#0a0d18 0%,#101528 60%,#0d1220 100%);
+       color:#e9edf7;min-height:100vh}
+  .wan{max-width:900px;margin:0 auto;background:linear-gradient(160deg,#0a0d18 0%,#101528 60%,#0d1220 100%);
+       border-radius:16px;padding:18px;border:1px solid #232c46}
+  .wan h1{margin:0 0 4px;font-size:22px;font-weight:900;letter-spacing:-.3px}
+  .wan h1 span{background:linear-gradient(90deg,#8b6cff,#22d3ee);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .wan .sub{color:#93a0bd;font-size:13px;margin-bottom:14px;line-height:1.6}
+  .wan .badges{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+  .wan .badge{font-size:11px;background:#16203a;border:1px solid #27334f;color:#a9b7d6;padding:4px 9px;border-radius:999px}
+  .wan .tabs{display:flex;gap:6px;background:#0f1526;border:1px solid #232c46;padding:5px;border-radius:12px;margin-bottom:14px}
+  .wan .tab{flex:1;text-align:center;padding:9px;border-radius:8px;font-size:13px;font-weight:700;color:#98a5c2;cursor:pointer;user-select:none;transition:.15s}
+  .wan .tab.on{background:linear-gradient(135deg,#6d4dff,#22d3ee);color:#0a0d18}
+  .wan .pane{display:none}.wan .pane.on{display:block}
+  .wan .field{margin-bottom:11px}
+  .wan .field label{display:block;font-size:12px;color:#9fb0d1;margin-bottom:5px;font-weight:700}
+  .wan input,.wan textarea,.wan select{width:100%;background:#0e1424;border:1px solid #26314c;color:#e9edf7;
+       border-radius:9px;padding:9px 11px;font-family:inherit;font-size:13px;outline:none}
+  .wan input:focus,.wan textarea:focus,.wan select:focus{border-color:#7c5cff}
+  .wan input[type=checkbox]{width:18px;height:18px;accent-color:#7c5cff}
+  .wan input[type=file]{padding:7px}
+  .wan .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  @media(max-width:640px){.wan .grid2{grid-template-columns:1fr}}
+  .wan .btn{width:100%;padding:12px;border:0;border-radius:11px;font-family:inherit;font-weight:900;font-size:15px;
+       background:linear-gradient(135deg,#6d4dff,#22d3ee);color:#080b14;cursor:pointer;margin-top:6px}
+  .wan .btn:disabled{opacity:.5;cursor:not-allowed}
+  .wan .status{margin-top:11px;font-size:13px;color:#93a0bd;min-height:20px;line-height:1.6}
+  .wan .status.ok{color:#34d399}.wan .status.err{color:#fb7185}
+  .wan video{width:100%;border-radius:12px;margin-top:12px;border:1px solid #26314c;background:#000}
+  .wan .dl{display:inline-block;margin-top:8px;font-size:13px;color:#22d3ee;text-decoration:none;font-weight:700}
+  .wan iframe{width:100%;height:640px;border:1px solid #26314c;border-radius:12px;background:#fff}
+  .wan .hint{font-size:12px;color:#7d8aab;line-height:1.7;margin-top:10px;background:#0f1526;border:1px dashed #26314c;padding:10px;border-radius:10px}
+  .wan .log{font-size:11.5px;color:#8ea0c4;white-space:pre-wrap;margin-top:10px;background:#0c1120;border:1px solid #202a42;padding:9px;border-radius:9px;max-height:150px;overflow:auto}
+</style>
+</head>
+<body>
+
+<div class="wan">
+  <h1>Wan<span>Studio</span> — صفحتي الخاصة</h1>
+  <div class="sub">واجهة مجانية 100% لتوليد الفيديو بنموذج Wan، تعمل أونلاين بدون تسجيل دخول. مبنية على مساحة <b>kulkas2pintu/wan777</b>.</div>
+  <div class="badges">
+    <span class="badge">بدون تسجيل دخول</span>
+    <span class="badge">بدون حساب</span>
+    <span class="badge">يعمل على الجوال</span>
+    <span class="badge">ملف واحد فقط</span>
+  </div>
+
+  <div class="tabs">
+    <div class="tab on" data-t="api">واجهتي السريعة (API)</div>
+    <div class="tab" data-t="emb">التطبيق الكامل (Embed)</div>
+  </div>
+
+  <div class="pane on" id="p-api">
+    <div class="grid2">
+      <div class="field">
+        <label>النص / الوصف (Prompt)</label>
+        <textarea id="prompt" rows="3" placeholder="امرأة تسير في مدينة نيون ليلاً، كاميرا تتحرك للأمام…"></textarea>
+      </div>
+      <div class="field">
+        <label>صورة (اختياري - لوضع صورة إلى فيديو)</label>
+        <input type="file" id="img" accept="image/*">
+      </div>
+    </div>
+    <div id="autoFields"></div>
+    <button class="btn" id="go">ولّد الفيديو</button>
+    <div class="status" id="status">جاهز.</div>
+    <div id="out"></div>
+    <div class="log" id="log" style="display:none"></div>
+    <div class="hint">الملاحظات: هذه المساحات مجانية وتعمل بالطابور، فإن كانت نائمة سيستغرق التشغيل الأول ٣٠–١٢٠ ثانية. المعاملات الإضافية (الخطوات، البذرة، الدقة…) تُبنى تلقائياً حسب ما تسمح به المساحة.</div>
+  </div>
+
+  <div class="pane" id="p-emb">
+    <iframe id="frame" src="about:blank" allow="clipboard-read; clipboard-write; fullscreen"></iframe>
+    <div class="hint">هذا هو التطبيق الأصلي مضمَّناً داخل صفحتك — نفس التجربة الكاملة، وبدون مغادرة موقعك.</div>
+  </div>
+</div>
+
+<script type="module">
+/* ====== غيّر هذين السطرين فقط لو أردت مساحة أخرى ====== */
+const SPACE_ID = "kulkas2pintu/wan777";
+const HOST = "https://kulkas2pintu-wan777.hf.space";
+/* ==================================================== */
+
+const $ = s => document.querySelector(s);
+let mod = null, app = null, ep = null, fields = [], started = false;
+
+document.querySelectorAll('.wan .tab').forEach(t => t.onclick = () => {
+  document.querySelectorAll('.wan .tab').forEach(x => x.classList.toggle('on', x === t));
+  document.querySelectorAll('.wan .pane').forEach(p => p.classList.toggle('on', p.id === 'p-' + t.dataset.t));
+  if (t.dataset.t === 'emb' && !started) { started = true; $('#frame').src = HOST + "/?__theme=dark"; }
+});
+
+const st = (t, c) => { const e = $('#status'); e.textContent = t; e.className = 'status ' + (c || ''); };
+const log = t => { const e = $('#log'); e.style.display = 'block'; e.textContent += t + "\n"; e.scrollTop = 1e6; };
+
+async function boot() {
+  st("جاري الاتصال بالمساحة…");
+  mod = await import("https://esm.sh/@gradio/client");
+  app = await mod.Client.connect(SPACE_ID);
+  const info = await fetch(HOST + "/gradio_api/info").then(r => r.json());
+  const entries = Object.entries(info.named_endpoints || {})
+    .filter(([n]) => !n.startsWith('/__') && !n.startsWith('/_'));
+  const vids = entries.filter(([n, e]) => (e.returns || []).some(r => r.component === 'video'));
+  const cands = (vids.length ? vids : entries)
+    .sort((a, b) => (b[1].parameters || []).length - (a[1].parameters || []).length);
+  if (!cands.length) throw new Error("لم يتم العثور على نقاط API");
+  ep = { api: cands[0][0], params: cands[0][1].parameters || [] };
+  log("endpoint: " + ep.api);
+  buildFields(ep.params);
+  st("متصل ✓ — اكتب الوصف ثم اضغط توليد.", "ok");
+}
+
+function buildFields(params) {
+  const box = $('#autoFields');
+  params.forEach((p, i) => {
+    const name = p.parameter_name || ('arg' + i);
+    const comp = (p.component || 'textbox').toLowerCase();
+    if (/prompt/i.test(name)) return;
+    if (comp === 'image' && i < 3) return;
+    const wrap = document.createElement('div'); wrap.className = 'field';
+    const lab = document.createElement('label'); lab.textContent = p.label || name; wrap.appendChild(lab);
+    let el;
+    if (comp === 'checkbox') { el = document.createElement('input'); el.type = 'checkbox'; el.checked = !!p.parameter_default; }
+    else if (comp === 'number' || comp === 'slider') {
+      el = document.createElement('input'); el.type = 'number';
+      if (p.min != null) el.min = p.min; if (p.max != null) el.max = p.max; if (p.step != null) el.step = p.step;
+      if (p.parameter_default != null) el.value = p.parameter_default;
+    }
+    else if (comp === 'dropdown' && Array.isArray(p.choices) && p.choices.length) {
+      el = document.createElement('select');
+      p.choices.forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = c; el.appendChild(o); });
+      if (typeof p.parameter_default === 'number') el.selectedIndex = p.parameter_default;
+    }
+    else if (comp === 'file' || comp === 'audio' || comp === 'video') { el = document.createElement('input'); el.type = 'file'; }
+    else { el = document.createElement('input'); el.type = 'text';
+      if (p.parameter_default != null && typeof p.parameter_default !== 'object') el.value = p.parameter_default; }
+    el.dataset.comp = comp; el.dataset.name = name; el.dataset.idx = i;
+    wrap.appendChild(el); box.appendChild(wrap); fields.push(el);
+  });
+}
+
+function gather() {
+  const valOf = el => {
+    if (el.type === 'file') return el.files[0] ? (mod.handle_file ? mod.handle_file(el.files[0]) : el.files[0]) : null;
+    if (el.dataset.comp === 'checkbox') return el.checked;
+    if (el.dataset.comp === 'number' || el.dataset.comp === 'slider') return el.value === '' ? null : Number(el.value);
+    return el.value === '' ? null : el.value;
+  };
+  const params = ep.params, vals = [];
+  for (let i = 0; i < params.length; i++) {
+    const name = params[i].parameter_name || ('arg' + i);
+    const comp = (params[i].component || '').toLowerCase();
+    if (/prompt/i.test(name)) { vals.push($('#prompt').value || null); continue; }
+    if (comp === 'image') { const f = $('#img').files[0]; vals.push(f ? (mod.handle_file ? mod.handle_file(f) : f) : null); continue; }
+    const el = fields.find(e => e.dataset.name === name);
+    vals.push(el ? valOf(el) : null);
+  }
+  return vals;
+}
+
+function showOut(data) {
+  const arr = Array.isArray(data) ? data : [];
+  let vid = arr.find(d => d && typeof d === 'object' && d.url && String(d.mime_type || '').startsWith('video'))
+         || arr.find(d => typeof d === 'string' && /\.(mp4|webm|mov)/i.test(d))
+         || arr.find(d => d && d.url && /\.(mp4|webm|mov)/i.test(d.url));
+  if (vid) {
+    const url = typeof vid === 'string' ? vid : vid.url;
+    $('#out').innerHTML = '<video controls autoplay loop src="' + url + '"></video>' +
+      '<a class="dl" download target="_blank" href="' + url + '">⬇ تحميل الفيديو</a>';
+  }
+  const txt = arr.filter(d => typeof d === 'string' && !/^https?:/.test(d));
+  if (txt.length) log(txt.join(" | "));
+}
+
+$('#go').onclick = async () => {
+  const btn = $('#go');
+  try {
+    btn.disabled = true; $('#out').innerHTML = '';
+    if (!app) await boot();
+    st("إرسال الطلب…");
+    const job = app.submit(ep.api, gather());
+    for await (const m of job) {
+      if (m.type === 'status') {
+        if (m.stage === 'pending') st("في قائمة الانتظار… (إن كانت المساحة نائمة فقد يطول أول تشغيل)");
+        else if (m.stage === 'generating') st("جاري التوليد…");
+        else if (m.stage === 'complete') st("تم ✓", "ok");
+      } else if (m.type === 'progress') {
+        st("جاري التوليد… " + (m.progress != null ? Math.round(m.progress * 100) + "%" : ""));
+      } else if (m.type === 'data') { showOut(m.data); }
+      else if (m.type === 'error') { st("خطأ: " + (m.message || m.error || ''), "err"); }
+    }
+  } catch (e) { st("فشل: " + e.message, "err"); log(String(e)); }
+  finally { btn.disabled = false; }
+};
+</script>
+</body>
+</html>
